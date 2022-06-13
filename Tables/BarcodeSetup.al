@@ -46,6 +46,10 @@ table 60121 "Barcode Setup"
             Caption = 'Token Azure Function';
             ExtendedDatatype = URL;
         }
+        field(10; IsActive; Boolean)
+        {
+            Caption = 'Is Active';
+        }
     }
 
     keys

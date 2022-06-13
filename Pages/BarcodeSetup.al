@@ -13,6 +13,10 @@ page 60122 BarcodeSetup
             group(General)
             {
                 Caption = 'General';
+                field(IsActive; Rec.IsActive)
+                {
+                    ApplicationArea = All;
+                }
                 field(Value; Rec.Value)
                 {
                     ApplicationArea = All;
@@ -88,9 +92,11 @@ page 60122 BarcodeSetup
                 begin
                     Helper.GetBarcodeFromAzure(Rec.Value, InStr);
 
-                    BarcodeSetup.Get();
-                    BarcodeSetup.Picture.ImportStream(InStr, BarcodeSetup.Value, 'image/gif');
-                    BarcodeSetup.Modify();
+                    if BarcodeSetup.Get() then
+                        if BarcodeSetup.IsActive then begin
+                            BarcodeSetup.Picture.ImportStream(InStr, BarcodeSetup.Value, 'image/gif');
+                            BarcodeSetup.Modify();
+                        end;
                 end;
             }
         }
@@ -106,9 +112,11 @@ page 60122 BarcodeSetup
         if Rec.Value <> '' then begin
             Helper.GetBarcodeFromAzure(Rec.Value, InStr);
 
-            BarcodeSetup.Get();
-            BarcodeSetup.Picture.ImportStream(InStr, BarcodeSetup.Value, 'image/gif');
-            BarcodeSetup.Modify();
+            if BarcodeSetup.Get() then
+                if BarcodeSetup.IsActive then begin
+                    BarcodeSetup.Picture.ImportStream(InStr, BarcodeSetup.Value, 'image/gif');
+                    BarcodeSetup.Modify();
+                end;
         end;
     end;
 

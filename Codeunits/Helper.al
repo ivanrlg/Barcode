@@ -20,6 +20,11 @@ codeunit 60123 Helper
         Url: Text;
         JsonRequest: Text;
     begin
+        BarcodeSetup.Get();
+        if not BarcodeSetup.IsActive then begin
+            exit;
+        end;
+
         Url := GetURL();
         JsonRequest := GetJsonRequest(Value);
 
