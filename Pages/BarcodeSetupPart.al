@@ -1,4 +1,4 @@
-page 60123 "Barcode Picture Part"
+page 60123 "Barcode Setup Part"
 {
     PageType = CardPart;
     SourceTable = "Barcode Setup";

@@ -61,7 +61,7 @@ page 60122 BarcodeSetup
         }
         area(FactBoxes)
         {
-            part(BarcodePicture; "Barcode Picture Part")
+            part(BarcodePicture; "Barcode Setup Part")
             {
                 ApplicationArea = All;
                 SubPageLink = Code = field(Code);
