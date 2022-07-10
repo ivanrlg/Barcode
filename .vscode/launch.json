@@ -6,14 +6,13 @@
             "request": "launch",
             "type": "al",          
             "startupObjectType": "Page",
-            "breakOnError": true,
+            "breakOnError": false,
             "launchBrowser": true,
-            "startupObjectId": 60122,
             "tenant": "tenant", 
             "environmentName":"Sandbox",
             "environmentType": "Sandbox",
             "schemaUpdateMode": "ForceSync",
             "forceUpgrade": true,
-        },
+        }, 
     ]
 }

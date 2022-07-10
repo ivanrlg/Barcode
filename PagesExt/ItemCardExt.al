@@ -62,16 +62,18 @@ pageextension 60123 "Item Card Ext" extends "Item Card"
     begin
         if (ErrorCode = 'ChildSessionTaskTimeout') then begin
             IsHandled := true;
-            PBTErrorNotification.Message(StrSubstNo('Something went wrong. %1\ Error Calls Stack: %2', ErrorText, ErrorCallStack));
+            PBTErrorNotification.Message(StrSubstNo('Something went wrong. %1', ErrorText));
             PBTErrorNotification.Send();
-        end
-
-        else
+        end else
             if (ErrorText = 'Child Session task was terminated because of a timeout.') then begin
                 IsHandled := true;
                 PBTErrorNotification.Message('It took too long to get results. Try again.');
                 PBTErrorNotification.Send();
-            end
+            end else begin
+                IsHandled := true;
+                PBTErrorNotification.Message(StrSubstNo('Something went wrong. %1. Error Calls Stack: %2', ErrorText, ErrorCallStack));
+                PBTErrorNotification.Send();
+            end;
     end;
 
     var
