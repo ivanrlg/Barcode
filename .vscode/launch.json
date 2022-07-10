@@ -2,17 +2,18 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Sandbox",
+            "name": "Launch Plur-e",
             "request": "launch",
             "type": "al",          
             "startupObjectType": "Page",
             "breakOnError": true,
             "launchBrowser": true,
-            "tenant": "Your Tennat Name",
-            "environmentName":"environmentName",
+            "startupObjectId": 60122,
+            "tenant": "tenant", 
+            "environmentName":"Sandbox",
             "environmentType": "Sandbox",
             "schemaUpdateMode": "ForceSync",
             "forceUpgrade": true,
-        }
+        },
     ]
 }

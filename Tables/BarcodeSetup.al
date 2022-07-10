@@ -32,7 +32,7 @@ table 60121 "Barcode Setup"
             OptionMembers = AZTEC,CODE_39,CODE_93,CODE_128,DATA_MATRIX,QR_CODE;
         }
 
-        field(7; Picture; Media)
+        field(7; Picture; MediaSet)
         {
             Caption = 'Picture';
         }

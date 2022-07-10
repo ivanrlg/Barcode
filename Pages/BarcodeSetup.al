@@ -88,15 +88,14 @@ page 60122 BarcodeSetup
                 ApplicationArea = All;
                 trigger OnAction();
                 var
-                    InStr: InStream;
+                    TaskParameters: Dictionary of [Text, Text];
                 begin
-                    Helper.GetBarcodeFromAzure(Rec.Value, InStr);
+                    if Rec.Value <> '' then begin
 
-                    if BarcodeSetup.Get() then
-                        if BarcodeSetup.IsActive then begin
-                            BarcodeSetup.Picture.ImportStream(InStr, BarcodeSetup.Value, 'image/gif');
-                            BarcodeSetup.Modify();
-                        end;
+                        TaskParameters.Add('Value', Rec.Value);
+
+                        CurrPage.EnqueueBackgroundTask(WaitTaskId, Codeunit::PBTProcessWS, TaskParameters, 10000, PageBackgroundTaskErrorLevel::Warning);
+                    end;
                 end;
             }
         }
@@ -104,24 +103,69 @@ page 60122 BarcodeSetup
 
     trigger OnOpenPage()
     var
-        InStr: InStream;
+        TaskParameters: Dictionary of [Text, Text];
     begin
-        Rec.DeleteAll();
         Rec.InsertIfNotExists;
 
         if Rec.Value <> '' then begin
-            Helper.GetBarcodeFromAzure(Rec.Value, InStr);
 
-            if BarcodeSetup.Get() then
-                if BarcodeSetup.IsActive then begin
-                    BarcodeSetup.Picture.ImportStream(InStr, BarcodeSetup.Value, 'image/gif');
-                    BarcodeSetup.Modify();
-                end;
+            TaskParameters.Add('Value', Rec.Value);
+
+            CurrPage.EnqueueBackgroundTask(WaitTaskId, Codeunit::PBTProcessWS, TaskParameters, 10000, PageBackgroundTaskErrorLevel::Warning);
+
         end;
     end;
 
+    trigger OnPageBackgroundTaskCompleted(TaskId: Integer; Results: Dictionary of [Text, Text])
     var
-        Helper: Codeunit Helper;
+        PBTNotification: Notification;
+        TempBlob: codeunit "Temp Blob";
+        Base64Convert: codeunit "Base64 Convert";
+        FileArrayBase64: text;
+        OutStream: OutStream;
+        InStream: InStream;
         BarcodeSetup: Record "Barcode Setup";
-        TempBlob: Codeunit "Temp Blob";
+        Message: Label 'Updated barcode image with background time of %1 ms';
+    begin
+        if (TaskId = WaitTaskId) then begin
+
+            Evaluate(FileArrayBase64, Results.Get('fileArrayBase64'));
+            Evaluate(durationtime, Results.Get('durationtime'));
+
+            TempBlob.CreateOutStream(OutStream);
+            Base64Convert.FromBase64(FileArrayBase64, OutStream);
+            TempBlob.CreateInStream(InStream);
+
+            if BarcodeSetup.Get() then
+                if BarcodeSetup.IsActive then begin
+                    BarcodeSetup.Picture.ImportStream(InStream, BarcodeSetup.Value, 'image/gif');
+                    BarcodeSetup.Modify();
+                end;
+
+            PBTNotification.Message(StrSubstNo(Message, durationtime));
+            PBTNotification.Send();
+        end;
+    end;
+
+    trigger OnPageBackgroundTaskError(TaskId: Integer; ErrorCode: Text; ErrorText: Text; ErrorCallStack: Text; var IsHandled: Boolean)
+    var
+        PBTErrorNotification: Notification;
+    begin
+        if (ErrorCode = 'ChildSessionTaskTimeout') then begin
+            IsHandled := true;
+            PBTErrorNotification.Message(StrSubstNo('Something went wrong. %1\ Error Calls Stack: %2', ErrorText, ErrorCallStack));
+            PBTErrorNotification.Send();
+        end
+
+        else
+            if (ErrorText = 'Child Session task was terminated because of a timeout.') then begin
+                IsHandled := true;
+                PBTErrorNotification.Message('It took too long to get results. Try again.');
+                PBTErrorNotification.Send();
+            end
+    end;
+
+    var
+        WaitTaskId: Integer;
+        durationtime: Text;
 }

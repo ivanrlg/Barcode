@@ -4,21 +4,21 @@ codeunit 60123 Helper
         BaseUrlAzure: Text;
         BarcodeSetup: Record "Barcode Setup";
 
-    procedure GetBarcodeFromAzure(Value: text; var InStr: InStream)
+    procedure GetBarcodeFromAzure(Value: text): Text
     var
         httpClient: HttpClient;
         httpContent: HttpContent;
         httpResponse: HttpResponseMessage;
-        httpHeader: HttpHeaders;
         Result: Text;
         IsSuccess: Boolean;
         Message: Text;
         OutPut: Text;
         JsonObject: JsonObject;
+        InStream: InStream;
         ParamsJToken: JsonToken;
         BarcodeSetup: Record "Barcode Setup";
         Url: Text;
-        JsonRequest: Text;
+        JsonRequest, FileArrayBase64 : Text;
     begin
         BarcodeSetup.Get();
         if not BarcodeSetup.IsActive then begin
@@ -29,9 +29,6 @@ codeunit 60123 Helper
         JsonRequest := GetJsonRequest(Value);
 
         httpContent.WriteFrom(JsonRequest);
-        httpContent.GetHeaders(httpHeader);
-        httpHeader.Remove('Content-Type');
-        httpHeader.Add('Content-Type', 'application/json');
         httpClient.Post(Url, httpContent, httpResponse);
 
         httpResponse.Content().ReadAs(OutPut);
@@ -42,7 +39,17 @@ codeunit 60123 Helper
             Exit;
         end;
 
-        GetImage_FromResponse(httpResponse, InStr);
+        JsonObject.ReadFrom(OutPut);
+
+        FileArrayBase64 := GetJsonToken(JsonObject, 'result').AsValue().AsText();
+
+        exit(FileArrayBase64);
+    end;
+
+    local procedure GetJsonToken(JsonObject: JsonObject; TokenKey: Text) JsonToken: JsonToken;
+    begin
+        if not JsonObject.Get(TokenKey, JsonToken) then
+            Error('Could not find a token with key %1', TokenKey);
     end;
 
     local procedure GetURL(): Text;
@@ -75,10 +82,5 @@ codeunit 60123 Helper
         jsonRequestJO.WriteTo(jsonRequestText);
 
         exit(jsonRequestText);
-    end;
-
-    local procedure GetImage_FromResponse(var Response: HttpResponseMessage; var InStr: InStream)
-    begin
-        Response.Content().ReadAs(InStr);
     end;
 }
